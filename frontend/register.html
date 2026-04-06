@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Register - LPGChain</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <div style="background:#0b2c5c; color:white; padding:10px; text-align:center; font-weight:bold;">
+    LPGChain - Smart LPG Distribution System
+  </div>
+
+    <div class="container">
+        <div class="login-box">
+            <h1>Create Customer Account</h1>
+            <p>Register to book LPG and track delivery</p>
+
+            <form id="registerForm">
+                <input type="text" id="name" placeholder="Full Name" required />
+                <input type="email" id="email" placeholder="Email Address" required />
+
+                <!-- Password -->
+                <div style="position: relative;">
+                    <input type="password" id="password" placeholder="Password" required
+                        style="width: 100%; padding-right: 50px;" oncopy="return false" oncut="return false"
+                        onpaste="return false" />
+                    <span onclick="togglePassword('password')"
+                        style="position: absolute; right: 15px; top: 14px; cursor: pointer; font-size: 16px;">
+                        👁
+                    </span>
+                </div>
+
+                <!-- Confirm Password -->
+                <div style="position: relative;">
+                    <input type="password" id="confirmPassword" placeholder="Confirm Password" required
+                        style="width: 100%; padding-right: 50px;" oncopy="return false" oncut="return false"
+                        onpaste="return false" />
+                    <span onclick="togglePassword('confirmPassword')"
+                        style="position: absolute; right: 15px; top: 14px; cursor: pointer; font-size: 16px;">
+                        👁
+                    </span>
+                </div>
+
+                <input type="text" id="address" placeholder="Area / Address" required />
+
+                <button type="submit">Create Account</button>
+            </form>
+
+            <p style="margin-top: 15px; font-size: 14px;">
+                Already have an account? <a href="login.html">Login</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const confirmPassword = document.getElementById("confirmPassword").value.trim();
+            const address = document.getElementById("address").value.trim();
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            const userData = {
+                name: name,
+                email: email,
+                password: password,
+                role: "CUSTOMER",
+                area: address
+            };
+
+            try {
+                const response = await fetch("http://localhost:8080/api/users/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.text();
+
+                if (response.ok) {
+                    alert("✅ Account created successfully! Redirecting to login...");
+                    window.location.href = "index.html";
+                } else {
+                    alert("❌ Registration failed: " + result);
+                }
+
+            } catch (error) {
+                alert("❌ Error connecting to backend!");
+                console.error(error);
+            }
+        });
+
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === "password" ? "text" : "password";
+        }
+    </script>
+
+  <div style="text-align:center; padding:10px; background:#eee; margin-top:20px;">
+    © 2026 LPGChain | Developed for Smart Gas Tracking System
+  </div>
+
+</body>
+</html>

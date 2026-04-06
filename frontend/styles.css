@@ -1,0 +1,118 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-box {
+  background: white;
+  padding: 40px;
+  width: 350px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.login-box h1 {
+  margin-bottom: 10px;
+  color: #0f172a;
+}
+
+.login-box p {
+  margin-bottom: 20px;
+  color: #555;
+}
+
+form input,
+form select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+}
+
+form button {
+  width: 100%;
+  padding: 12px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+form button:hover {
+  background: #1d4ed8;
+}
+
+.section {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 18px;
+  margin-top: 20px;
+  border-radius: 12px;
+  text-align: center;
+  border-left: 5px solid #00c3ff;
+}
+
+.section h2 {
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.section p, .section li {
+  color: #eaeaea;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.section ul {
+  padding-left: 20px;
+}
+
+.tracking-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tracking-step {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  color: #bbb;
+  text-align: center;
+  font-weight: bold;
+  border: 2px solid #555;
+  transition: 0.3s;
+}
+
+.tracking-step.active {
+  background: #00c853;
+  color: white;
+  border-color: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - LPGChain</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: linear-gradient(135deg, #0b2c5c, #1e4d91);
+      color: white;
+    }
+
+    .header {
+      background: white;
+      color: #0b2c5c;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logout-btn {
+      background: red;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .container {
+      padding: 30px;
+    }
+
+    .stats-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-box {
+      background: rgba(255,255,255,0.1);
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      color: black;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      color: black;
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h3 {
+      color: #0b2c5c;
+      margin-bottom: 20px;
+    }
+
+    .modal-content table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .modal-content th, .modal-content td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .modal-content th {
+      background: #0b2c5c;
+      color: white;
+    }
+
+    .close-btn {
+      background: red;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      float: right;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>Admin Dashboard</h2>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+  <!-- Live Stats -->
+  <div class="stats-section">
+    <div class="stat-box">
+      <div class="stat-value" id="totalUsers">0</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="totalBookings">0</div>
+      <div class="stat-label">Total Bookings</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="pendingBookings">0</div>
+      <div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="deliveredBookings">0</div>
+      <div class="stat-label">Delivered</div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="card" onclick="location.href='add-distributor.html'">
+      ➕<br><br>
+      <b>Add Distributor</b>
+    </div>
+
+    <div class="card" onclick="viewAllUsers()">
+      👥<br><br>
+      <b>View All Users</b>
+    </div>
+
+    <div class="card" onclick="viewSystemOverview()">
+      📊<br><br>
+      <b>System Overview</b>
+    </div>
+
+  </div>
+</div>
+
+<!-- Users Modal -->
+<div class="modal" id="usersModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('usersModal')">✕ Close</button>
+    <h3>👥 All Users</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody id="usersTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Overview Modal -->
+<div class="modal" id="overviewModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('overviewModal')">✕ Close</button>
+    <h3>📊 System Overview</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Customer</th>
+          <th>Address</th>
+          <th>Type</th>
+          <th>Distributor</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="overviewTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+async function loadStats() {
+  try {
+    const [usersRes, bookingsRes] = await Promise.all([
+      fetch("http://localhost:8080/api/users/all"),
+      fetch("http://localhost:8080/api/bookings/all")
+    ]);
+    const users = await usersRes.json();
+    const bookings = await bookingsRes.json();
+
+    document.getElementById("totalUsers").innerText = users.length;
+    document.getElementById("totalBookings").innerText = bookings.length;
+    document.getElementById("pendingBookings").innerText = bookings.filter(b => b.status === "Booked").length;
+    document.getElementById("deliveredBookings").innerText = bookings.filter(b => b.status === "Delivered").length;
+  } catch (error) {
+    console.error("Error loading stats:", error);
+  }
+}
+
+async function viewAllUsers() {
+  try {
+    const response = await fetch("http://localhost:8080/api/users/all");
+    const users = await response.json();
+    const tbody = document.getElementById("usersTable");
+    tbody.innerHTML = "";
+    users.forEach(user => {
+      tbody.innerHTML += `<tr><td>${user.id}</td><td>${user.name}</td><td>${user.email}</td><td>${user.role}</td></tr>`;
+    });
+    document.getElementById("usersModal").classList.add("show");
+  } catch (error) {
+    alert("Error loading users!");
+  }
+}
+
+async function viewSystemOverview() {
+  try {
+    const response = await fetch("http://localhost:8080/api/bookings/all");
+    const bookings = await response.json();
+    const tbody = document.getElementById("overviewTable");
+    tbody.innerHTML = "";
+    bookings.forEach(b => {
+      tbody.innerHTML += `<tr><td>${b.id}</td><td>${b.customerEmail}</td><td>${b.address}</td><td>${b.type}</td><td>${b.distributor}</td><td>${b.status}</td></tr>`;
+    });
+    document.getElementById("overviewModal").classList.add("show");
+  } catch (error) {
+    alert("Error loading overview!");
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove("show");
+}
+
+function logout(){
+  alert("Logged out");
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("role");
+  window.location.href = "login.html";
+}
+
+loadStats();
+</script>
+
+</body>
+</html>

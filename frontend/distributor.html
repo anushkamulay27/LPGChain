@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distributor Dashboard - LPGChain</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<script>
+  if (localStorage.getItem("role") !== "DISTRIBUTOR") {
+    alert("Access Denied!");
+    window.location.href = "login.html";
+  }
+</script>
+
+<div class="container">
+  <div class="login-box" style="max-width: 850px;">
+    <h1>Distributor Dashboard</h1>
+    <p>Manage LPG Orders and Delivery</p>
+
+    <div class="section">
+      <h2>📦 All Customer Orders</h2>
+      <ul id="ordersList" style="text-align:left;">
+        <li>Loading orders...</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>🔄 Update Order Status</h2>
+      <input type="number" id="orderId" placeholder="Enter Order ID" />
+      <select id="status">
+        <option value="Booked">Booked</option>
+        <option value="Out for Delivery">Out for Delivery</option>
+        <option value="Delivered">Delivered</option>
+      </select>
+      <button onclick="updateOrderStatus()">Update Status</button>
+    </div>
+
+    <button onclick="logout()" style="margin-top:20px; background:red;">Logout</button>
+  </div>
+</div>
+
+<script>
+  async function loadAllOrders() {
+    try {
+      const response = await fetch("http://localhost:8080/api/orders/all");
+      const orders = await response.json();
+
+      const ordersList = document.getElementById("ordersList");
+      ordersList.innerHTML = "";
+
+      if (orders.length === 0) {
+        ordersList.innerHTML = "<li>No orders found.</li>";
+        return;
+      }
+
+      orders.forEach(order => {
+        const li = document.createElement("li");
+        li.innerText = `Order #${order.id} | ${order.customerEmail} | ${order.status} | ${order.address}`;
+        ordersList.appendChild(li);
+      });
+
+    } catch (error) {
+      console.error("Error loading orders:", error);
+      document.getElementById("ordersList").innerHTML = "<li>Error loading orders.</li>";
+    }
+  }
+
+  async function updateOrderStatus() {
+    const orderId = document.getElementById("orderId").value;
+    const status = document.getElementById("status").value;
+
+    if (!orderId) {
+      alert("Please enter Order ID!");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/orders/update/${orderId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ status: status })
+      });
+
+      const result = await response.text();
+      alert(result);
+      loadAllOrders();
+
+    } catch (error) {
+      alert("Failed to update order!");
+      console.error(error);
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem("role");
+    localStorage.removeItem("email");
+    window.location.href = "login.html";
+  }
+
+  loadAllOrders();
+</script>
+
+</body>
+</html>

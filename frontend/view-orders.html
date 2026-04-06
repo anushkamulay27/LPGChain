@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View Orders</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background: #0b2c5c;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>📦 All Cylinder Orders</h2>
+    <table border="1" width="100%" cellpadding="10" cellspacing="0" style="background:white; color:black; border-collapse: collapse;">
+      <thead style="background:#0b2c5c; color:white;">
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Address</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTable">
+      </tbody>
+    </table>
+
+    <div style="text-align:center; margin-top:20px;">
+      <a href="distributor-dashboard.html" style="color:white; text-decoration:none; font-weight:bold;">⬅ Back to Dashboard</a>
+    </div>
+  </div>
+
+<script>
+  async function loadOrders() {
+    try {
+      const response = await fetch("http://localhost:8080/api/bookings/all");
+      const bookings = await response.json();
+
+      const table = document.getElementById("ordersTable");
+      table.innerHTML = "";
+
+      bookings.forEach(booking => {
+        table.innerHTML += `
+          <tr>
+            <td>${booking.id}</td>
+            <td>${booking.name}</td>
+            <td>${booking.address}</td>
+            <td>${booking.type}</td>
+            <td>${booking.status}</td>
+          </tr>
+        `;
+      });
+
+    } catch (error) {
+      console.error("Error loading bookings:", error);
+      alert("Error loading orders!");
+    }
+  }
+
+  loadOrders();
+</script>
+
+</body>
+</html>

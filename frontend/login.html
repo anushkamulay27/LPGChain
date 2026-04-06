@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - LPGChain</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div style="background:#0b2c5c; color:white; padding:10px; text-align:center; font-weight:bold;">
+    LPGChain - Smart LPG Distribution System
+  </div>
+
+  <div class="container">
+    <div class="login-box">
+      <h1>Login to LPGChain</h1>
+      <p>Enter your account details</p>
+
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email Address" required />
+
+    <div style="position: relative;">
+      <input type="password" id="password" placeholder="Password" required 
+        style="width: 100%; padding-right: 50px;"
+        oncopy="return false" oncut="return false" onpaste="return false" />
+      <span onclick="togglePassword('password')"
+        style="position: absolute; right: 15px; top: 14px; cursor: pointer; font-size: 18px;">
+        👁
+      </span>
+    </div>
+
+    <select id="role" required>
+      <option value="">Select Role</option>
+      <option value="CUSTOMER">Customer</option>
+      <option value="DISTRIBUTOR">Distributor</option>
+      <option value="ADMIN">Admin</option>
+    </select>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <p style="margin-top: 15px; font-size: 14px;">
+    Don't have an account? <a href="register.html">Create Account</a>
+  </p>
+</div>
+
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const role = document.getElementById("role").value;
+
+      const loginData = {
+        email: email,
+        password: password,
+        role: role
+      };
+
+      try {
+        const response = await fetch("http://localhost:8080/api/users/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(loginData)
+        });
+
+        const result = await response.text();
+
+        if (response.ok) {
+
+          // 🔥 STORE EMAIL FOR DASHBOARD
+          localStorage.setItem("userEmail", email);
+
+          alert("✅ Login successful!");
+
+          // 🔥 ROLE BASED REDIRECT
+          if (role === "ADMIN") {
+            window.location.href = "admin-dashboard.html";
+          } else if (role === "DISTRIBUTOR") {
+            window.location.href = "distributor-dashboard.html";
+          } else {
+            window.location.href = "customer-dashboard.html";
+          }
+
+        } else {
+          alert("❌ " + result);
+        }
+
+      } catch (error) {
+        alert("❌ Error connecting to backend!");
+        console.error(error);
+      }
+    });
+
+    function togglePassword(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === "password" ? "text" : "password";
+    }
+  </script>
+
+  <div style="text-align:center; padding:10px; background:#eee; margin-top:20px;">
+    © 2026 LPGChain | Developed for Smart Gas Tracking System
+  </div>
+
+</body>
+</html>

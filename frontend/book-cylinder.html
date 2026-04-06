@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Book Cylinder - LPGChain</title>
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: linear-gradient(135deg, #0b2c5c, #1e4d91);
+      color: white;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 60px auto;
+      background: white;
+      color: black;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    h2 {
+      text-align: center;
+      color: #0b2c5c;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2f65d9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      margin-top: 15px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #1e4fbf;
+    }
+
+    .back {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .back a {
+      color: #0b2c5c;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>📦 Book LPG Cylinder</h2>
+
+  <form id="bookingForm">
+    <input type="text" id="name" placeholder="Enter Full Name" required>
+
+    <input type="text" id="address" placeholder="Enter Full Address" required>
+    <input type="text" id="distributor" placeholder="Assigned Distributor" readonly>
+    <p style="font-size: 13px; color: #666; margin-top: -4px; margin-bottom: 10px;">Distributor is auto-selected based on your delivery address.</p>
+
+    <select id="type" required>
+      <option value="">Select Cylinder Type</option>
+      <option value="Domestic">Domestic</option>
+      <option value="Commercial">Commercial</option>
+    </select>
+
+    <button type="submit">Book Now</button>
+  </form>
+
+  <div class="back">
+    <a href="customer-dashboard.html">⬅ Back to Dashboard</a>
+  </div>
+</div>
+
+<script>
+  // Infer distributor from free-form address input
+  async function inferDistributor() {
+    const address = document.getElementById("address").value.trim().toLowerCase();
+    const distributorInput = document.getElementById("distributor");
+    const knownAreas = ["khadki", "pimpri" , "fursungi", "kirkee", "vishrantwadi", "parvati hill", "lohegaon", "mundhwa", "dighi", "hadaspar", "hinjewadi", "aundh", "paud", "wakad", "kothrud", "katraj", "kondhwa", "bibwewadi", "baner", "viman nagar", "kharadi"];
+
+    if (!address) {
+      distributorInput.value = "";
+      return;
+    }
+
+    const matchedArea = knownAreas.find(area => address.includes(area));
+    if (!matchedArea) {
+      distributorInput.value = "Auto assign after booking";
+      return;
+    }
+
+    try {
+      const capitalizedArea = matchedArea.charAt(0).toUpperCase() + matchedArea.slice(1);
+const response = await fetch(`http://localhost:8080/api/bookings/distributor/${encodeURIComponent(capitalizedArea)}`);
+      const data = await response.json();
+      distributorInput.value = data.name;
+    } catch (error) {
+      console.error("Error fetching distributor:", error);
+      distributorInput.value = "Auto assign after booking";
+    }
+  }
+
+  document.getElementById("address").addEventListener("blur", inferDistributor);
+  document.getElementById("address").addEventListener("input", inferDistributor);
+
+  // Handle form submission
+  document.getElementById("bookingForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const bookingData = {
+      customerEmail: localStorage.getItem("userEmail"),
+      name: document.getElementById("name").value,
+      address: document.getElementById("address").value,
+      type: document.getElementById("type").value,
+      distributor: document.getElementById("distributor").value,
+      status: "Booked"
+    };
+
+    try {
+      const response = await fetch("http://localhost:8080/api/bookings/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(bookingData)
+      });
+
+      const result = await response.json();
+      alert("✅ Cylinder booked successfully!\nYour Booking ID is: " + result.id + "\n(Save this ID to track your order)");
+      window.location.href = "customer-dashboard.html";
+    } catch (error) {
+      alert("Error connecting to backend!");
+      console.error(error);
+    }
+  });
+</script>
+
+</body>
+</html>
